@@ -167,7 +167,6 @@ const COLLECT_ID_AND_LEVEL_DATA = async (login: string) => {
 
 export const XP_AMOUNT = async (login: string) => {
 
-    //TODO: handle special char prohibited
     //TODO: make an initial query to verify user exists with such login, if result is empty, stop further logic
 
     const PISCINE_JS_XP = 70000;

@@ -6,13 +6,9 @@ import { Col, Container, Row } from 'react-bootstrap';
 function App() {
   const [login, setLogin] = useState("")
 
-  const displayName = (loginFromSearch: string) => {
-    setLogin(loginFromSearch)
-  }
-
   return (
     <div className="App">
-      <Header parentFunction={displayName} />
+      <Header setLoginToFetch={setLogin} />
       <Container>
         <Row className="mt-4">
           {login && <BasicInformation login={login} />}

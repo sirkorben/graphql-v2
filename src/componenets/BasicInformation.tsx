@@ -3,11 +3,11 @@ import { Button, Card } from 'react-bootstrap';
 import { UserInfo } from '../models/user.info';
 import { XP_AMOUNT } from '../queries/CollectBasicInfo';
 
-type Props = {
+type BasicInformationProps = {
     login: string
 }
 
-function BasicInformation({ login }: Props) {
+function BasicInformation({ login }: BasicInformationProps) {
     const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
 
     XP_AMOUNT(login).then((promisedUserInfo) => {
