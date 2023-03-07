@@ -106,6 +106,7 @@ const COLLECT_PROGRESS_DATA = async (login: string) => {
                 isDoneProjectsMap.set(isDoneProject.path, 0);
             });
         } else {
+            fullDataFetched = true
             console.log("no results");
         }
     };
@@ -134,6 +135,7 @@ const COLLECT_XP_DATA = async (login: string) => {
                 transactions.push(transaction)
             );
         } else {
+            fullDataFetched = true
             console.log("no results");
         }
     };
@@ -165,9 +167,10 @@ const COLLECT_ID_AND_LEVEL_DATA = async (login: string) => {
     return idLevelInfo;
 }
 
-export const XP_AMOUNT = async (login: string) => {
+export const BASIC_INFO = async (login: string) => {
 
     //TODO: make an initial query to verify user exists with such login, if result is empty, stop further logic
+    // level query can be used for that
 
     const PISCINE_JS_XP = 70000;
     const isDoneProjectsMap = await COLLECT_PROGRESS_DATA(login);

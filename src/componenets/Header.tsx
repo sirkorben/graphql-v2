@@ -42,7 +42,7 @@ const Header: React.FunctionComponent<HeaderProps> = ({ setLoginToFetch }) => {
               value={loginEntered}
               onChange={(e) => setLoginEntered(e.target.value)}
             />
-            <input type="submit" value="Search" />
+            <input type="submit" value="Search" className="btn btn-primary" />
             Search
           </Form>
         </Container>

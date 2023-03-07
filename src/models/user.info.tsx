@@ -21,4 +21,5 @@ export interface Transaction {
     object: Object,
     path: string,
     type: string,
+    createdAt: string
 }
