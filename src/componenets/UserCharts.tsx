@@ -9,11 +9,11 @@ interface UserChartsProps {
 const UserCharts: React.FunctionComponent<UserChartsProps> = ({ login }) => {
 
     return (
-        <>
+        <div className='w-75 p-3'>
             <LevelOverTimeChart login={login} />
-            <ProjectXpEarnedChart login={login} />
             <AuditsChart login={login} />
-        </>
+            <ProjectXpEarnedChart login={login} />
+        </div>
     )
 }
 

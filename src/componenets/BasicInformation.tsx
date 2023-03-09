@@ -17,6 +17,7 @@ const BasicInformation: React.FunctionComponent<BasicInformationProps> = ({ logi
             const basicInfo = await fetchBasicInfo(login)
             if (basicInfo.login === "") {
                 setDisplayGraphics(false)
+                setShowMore(false)
             }
             setUserInfo(basicInfo)
         }

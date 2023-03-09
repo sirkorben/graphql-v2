@@ -12,7 +12,7 @@ function App() {
     <div className="App">
       <Header setLoginToFetch={setLogin} />
       <Container className="mt-4">
-        <div className="mx-auto" style={{ width: '400px' }}>
+        <div style={{ width: '400px' }}>
           {login && <BasicInformation login={login} setDisplayGraphics={setDisplayGraphics} />}
         </div>
       </Container>

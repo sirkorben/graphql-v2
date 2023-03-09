@@ -76,7 +76,7 @@ const LevelOverTimeChart: React.FunctionComponent<LevelOverTimeChartProps> = ({ 
     return (
         <div className="mt-4">
             <>
-                <p className="text-center"><b>Level gained while Div-01 project passed</b></p>
+                <b>Level gained while Div-01 project passed</b>
                 <Line options={options} data={data} />
             </>
         </div>

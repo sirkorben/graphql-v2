@@ -57,7 +57,7 @@ const ProjectXpEarnedChart: React.FunctionComponent<ProjectXpEarnedChartProps> =
 
     return (
         <div className="mt-4">
-            <p className="text-center"><b>XP earned for project</b></p>
+            <b>XP earned for project</b>
             <Doughnut data={data} />
 
         </div>
