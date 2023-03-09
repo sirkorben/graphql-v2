@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import Header from './componenets/Header';
 import BasicInformation from './componenets/BasicInformation';
-import { Col, Container, Row } from 'react-bootstrap';
+import { Container } from 'react-bootstrap';
 import UserCharts from './componenets/UserCharts';
 
 function App() {
@@ -18,9 +18,8 @@ function App() {
         </div>
       </Container>
       <Container className="mt-4">
-        {displayGraphics ? <><UserCharts login={login}></UserCharts></> : <>suppose charts are hidden</>}
+        {displayGraphics ? <><UserCharts login={login}></UserCharts></> : <></>}
       </Container>
-
     </div>
   );
 }

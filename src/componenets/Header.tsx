@@ -1,15 +1,12 @@
 import * as React from 'react';
-import { Navbar, Form, Button } from 'react-bootstrap';
+import { Navbar, Form } from 'react-bootstrap';
 import Container from 'react-bootstrap/Container';
-import SearchForm from './SearchForm';
 
 interface HeaderProps {
   setLoginToFetch: Function
 }
 
-
 const Header: React.FunctionComponent<HeaderProps> = ({ setLoginToFetch }) => {
-
   const [loginEntered, setLoginEntered] = React.useState("")
 
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {

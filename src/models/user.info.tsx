@@ -1,9 +1,10 @@
 
 export interface UserInfo {
     id?: number,
-    login: string,
+    login?: string,
     level?: number,
     xp?: number,
+    auditRatio?: string,
 }
 
 export interface Progress {
@@ -18,8 +19,14 @@ export interface Object {
 
 export interface Transaction {
     amount: number,
-    object: Object,
-    path: string,
-    type: string,
+    object?: Object,
+    path?: string,
+    type?: string,
     createdAt: string
+}
+
+export interface AuditTransactions {
+    upTransactions: Transaction[],
+    downTransactions: Transaction[],
+    labels?: string[],
 }

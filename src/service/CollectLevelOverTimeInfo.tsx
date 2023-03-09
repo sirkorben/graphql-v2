@@ -2,7 +2,7 @@ import axios from "axios";
 import { GRAPHQL_URL } from "./GraphqlUrl";
 import { Transaction } from "../models/user.info";
 
-const LEVEL_DATA_QUERY_TO_SERVER = async (login: string) => {
+const LEVEL_DATA_QUERY_TO_SERVER = async (login: string, offset: number) => {
   const LEVEL_QUERY = `
     query UserLevelOverTime
     {
@@ -12,11 +12,16 @@ const LEVEL_DATA_QUERY_TO_SERVER = async (login: string) => {
           type: { _eq: "level" }
           object: { type: { _regex: "project" } }
         }
-        order_by: { amount: asc }
+        offset: ${offset}
+        order_by: { createdAt: asc }
       ) {
         amount
         createdAt
         path
+        object{
+          name
+          type
+        }
       }
     }`
 
@@ -28,12 +33,40 @@ const LEVEL_DATA_QUERY_TO_SERVER = async (login: string) => {
   );
 }
 
+
+const COLLECT_LEVEL_DATA = async (login: string) => {
+  let fullDataFetched = false;
+  let transactions: Array<Transaction> = [];
+  let offset = 0;
+
+  const FETCH_XP_DATA = async (login: string, offset: number) => {
+    const res = await LEVEL_DATA_QUERY_TO_SERVER(login, offset);
+    if (res.data.data.transaction) {
+      res.data.data.transaction.forEach((transaction: Transaction) =>
+        transactions.push(transaction)
+      );
+    } else {
+      fullDataFetched = true
+      console.log("no results");
+    }
+  };
+
+  while (!fullDataFetched) {
+    await FETCH_XP_DATA(login, offset);
+    if (transactions.length % 50 === 0) {
+      offset += 50;
+    } else {
+      fullDataFetched = true;
+    }
+  }
+
+  return transactions;
+};
+
 export const LEVEL_OVER_TIME_INFO = async (login: string) => {
   let levelTimeMap = new Map<string, number>()
-  //TODO: handle possible case where results are more than 50
-  let arr: Transaction[] = (await LEVEL_DATA_QUERY_TO_SERVER(login)).data.data.transaction
-  arr.forEach(transaction => levelTimeMap.set(transaction.createdAt, transaction.amount))
-  console.log(levelTimeMap)
+  let arr: Transaction[] = (await COLLECT_LEVEL_DATA(login))
+  arr.forEach(transaction => levelTimeMap.set(transaction.createdAt.split("T")[0], transaction.amount))
 
-  return arr;
+  return levelTimeMap;
 }

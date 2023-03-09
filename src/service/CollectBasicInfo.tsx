@@ -1,6 +1,7 @@
 import axios from "axios";
 import { GRAPHQL_URL } from "./GraphqlUrl";
 import { Transaction, Progress, UserInfo } from "../models/user.info";
+import { AUDIT_RATIO } from "./CollectAuditsInfo";
 
 const LEVEL_DATA_QUERY_TO_SERVER = async (login: string) => {
     const LEVEL_QUERY = `
@@ -10,7 +11,6 @@ const LEVEL_DATA_QUERY_TO_SERVER = async (login: string) => {
         where: {
           user: { login: { _eq: ${login} } }
           type: { _eq: "level" }
-          object: { type: { _regex: "project" } }
         }
         limit: 1
         order_by: { amount: desc }
@@ -31,7 +31,6 @@ const LEVEL_DATA_QUERY_TO_SERVER = async (login: string) => {
 const PROGRESS_DATA_QUERY_TO_SERVER = async (login: string, offset: number) => {
     const PROGRESS_QUERY = `
     query UserProgress{
-  
         user(where: {login: {_eq: ${login}}})
         {
           progresses(
@@ -45,9 +44,6 @@ const PROGRESS_DATA_QUERY_TO_SERVER = async (login: string, offset: number) => {
             createdAt
             isDone
             path
-            # object {
-            #   name
-            # }
           }
         }
           
@@ -86,6 +82,7 @@ const XP_DATA_QUERY_TO_SERVER = async (login: string, offset: number) => {
             }
           }
         `;
+
     return await axios.post(
         GRAPHQL_URL,
         JSON.stringify({
@@ -94,7 +91,7 @@ const XP_DATA_QUERY_TO_SERVER = async (login: string, offset: number) => {
     );
 };
 
-const COLLECT_PROGRESS_DATA = async (login: string) => {
+export const COLLECT_PROGRESS_DATA = async (login: string) => {
     let isDoneProjectsMap = new Map<string, number>();
     let fullDataFetched = false;
     let offset = 0;
@@ -123,7 +120,7 @@ const COLLECT_PROGRESS_DATA = async (login: string) => {
     return isDoneProjectsMap;
 };
 
-const COLLECT_XP_DATA = async (login: string) => {
+export const COLLECT_XP_DATA = async (login: string) => {
     let fullDataFetched = false;
     let transactions: Array<Transaction> = [];
     let offset = 0;
@@ -153,47 +150,59 @@ const COLLECT_XP_DATA = async (login: string) => {
 };
 
 const COLLECT_ID_AND_LEVEL_DATA = async (login: string) => {
-    let idLevelInfo: UserInfo = {
-        login: "",
-    };
 
     const FETCH_LEVEL_DATA = async (login: string) => {
+        let idLevelInfo: UserInfo = {
+            login: "",
+        };
         const res = await LEVEL_DATA_QUERY_TO_SERVER(login);
-        idLevelInfo.id = res.data.data.transaction[0].userId
-        idLevelInfo.level = res.data.data.transaction[0].amount
+        if (res.data.data.transaction[0]) {
+            idLevelInfo.id = res.data.data.transaction[0].userId
+            idLevelInfo.level = res.data.data.transaction[0].amount
+            idLevelInfo.login = login
+            return idLevelInfo
+        }
+        console.log("empty response")
+        return idLevelInfo
 
     };
-    await FETCH_LEVEL_DATA(login)
+
+    let idLevelInfo = await FETCH_LEVEL_DATA(login)
     return idLevelInfo;
 }
 
 export const BASIC_INFO = async (login: string) => {
 
     //TODO: make an initial query to verify user exists with such login, if result is empty, stop further logic
-    // level query can be used for that
+    //  id/level query can be used for that
 
     const PISCINE_JS_XP = 70000;
-    const isDoneProjectsMap = await COLLECT_PROGRESS_DATA(login);
-    const allTransactions = await COLLECT_XP_DATA(login);
-    const idAndLevel = await COLLECT_ID_AND_LEVEL_DATA(login)
 
-    allTransactions.forEach((transaction) => {
-        if (isDoneProjectsMap.has(transaction.path)) {
-            isDoneProjectsMap.set(transaction.path, transaction.amount);
-        }
-    });
+    const userIdandLevelEtc = await COLLECT_ID_AND_LEVEL_DATA(login)
 
-    let userInfo: UserInfo = {
-        login: login,
-    };
+    if (userIdandLevelEtc.login !== "") {
+        const isDoneProjectsMap = await COLLECT_PROGRESS_DATA(login);
+        const allTransactions = await COLLECT_XP_DATA(login);
+        const auditRatio = await AUDIT_RATIO(login)
 
-    userInfo.id = idAndLevel.id
-    userInfo.level = idAndLevel.level;
-    userInfo.xp = Math.round(
-        (Array.from(isDoneProjectsMap.values()).reduce((acc, val) => acc + val, 0) +
-            PISCINE_JS_XP) /
-        1000
-    );
+        allTransactions.forEach((transaction) => {
+            if (isDoneProjectsMap.has(transaction.path!)) {
+                isDoneProjectsMap.set(transaction.path!, transaction.amount);
+            }
+        });
 
-    return userInfo;
+        let userInfo: UserInfo = {
+            login: login,
+            id: userIdandLevelEtc.id,
+            level: userIdandLevelEtc.level,
+            auditRatio: auditRatio,
+            xp: Math.round(
+                (Array.from(isDoneProjectsMap.values()).reduce((acc, val) => acc + val, 0) +
+                    PISCINE_JS_XP) /
+                1000
+            )
+        };
+        return userInfo
+    }
+    return userIdandLevelEtc;
 };

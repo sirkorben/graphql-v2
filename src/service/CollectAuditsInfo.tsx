@@ -1,17 +1,33 @@
 import axios from "axios";
-import { Transaction } from "../models/user.info";
+import { AuditTransactions, Transaction } from "../models/user.info";
 import { GRAPHQL_URL } from "./GraphqlUrl";
 
 
+const DOWN = "down"
+const UP = "up"
+const MONTHS_NAME = new Map<string, string>([
+    ["01", "January"],
+    ["02", "February"],
+    ["03", "March"],
+    ["04", "April"],
+    ["05", "May"],
+    ["06", "June"],
+    ["07", "July"],
+    ["08", "August"],
+    ["09", "September"],
+    ["10", "October"],
+    ["11", "November"],
+    ["12", "December"],
+])
+
 const AUDIT_QUERY_TO_SERVER = async (login: string, offset: number, upOrDown: string) => {
     const AUDIT_QUERY = `
-    query UserDownAudit
+    query UserAudit
     {
       transaction(
         where: {
           user: { login: { _eq: ${login} } }
           type: { _eq: ${upOrDown} }
-          object: { type: { _regex: "project" } }
         }
         offset: ${offset}
         order_by: { createdAt: desc }
@@ -57,27 +73,83 @@ const COLLECT_DOWN_OR_UP_AUDIT = async (login: string, upOrDown: string) => {
             fullDataFetched = true;
         }
     }
-    // console.log("transactions from collect data:")
-    // console.log(transactions)
+
     return transactions;
 }
 
-
+const CALC_SUM_OF_AUDIT_BY_MONTH = (transactions: Transaction[]) => {
+    let amount = transactions[0].amount
+    let calculatedAuditArr: Transaction[] = []
+    for (let i = 1; i < transactions.length; i++) {
+        if (transactions[i - 1].createdAt !== transactions[i].createdAt) {
+            let newTransaction: Transaction = {
+                amount: Math.round(amount),
+                createdAt: transactions[i - 1].createdAt,
+            }
+            calculatedAuditArr.push(newTransaction)
+            amount = transactions[i].amount
+        } else {
+            amount += transactions[i].amount
+            if (i === (transactions.length - 1)) {
+                let newTransaction: Transaction = {
+                    amount: Math.round(amount),
+                    createdAt: transactions[i].createdAt,
+                }
+                calculatedAuditArr.push(newTransaction)
+            }
+        }
+    }
+    return calculatedAuditArr;
+}
 
 export const UP_DOWN_AUDIT_INFO = async (login: string) => {
-    const DOWN = "down"
-    const UP = "up"
-    const responseWithDownAudits = await COLLECT_DOWN_OR_UP_AUDIT(login, DOWN)
-    const responseWithUpAudits = await COLLECT_DOWN_OR_UP_AUDIT(login, UP)
+    const labels: Array<string> = []
 
-    // (Array.from(isDoneProjectsMap.values()).reduce((acc, val) => acc + val, 0) +
-    //     PISCINE_JS_XP) /
-    // 1000)
-    console.log(responseWithDownAudits.map(function (tra) { return tra.amount }).reduce((acc, val) => acc + val, 0))
-    console.log(responseWithUpAudits.map(function (tra) { return tra.amount }).reduce((acc, val) => acc + val, 0))
+    const responseWithDownAudits: Transaction[] = (await COLLECT_DOWN_OR_UP_AUDIT(login, DOWN)).map(function (tra) {
+        let splittedCreatedAt = tra.createdAt.split("T")[0].split("-")
+        let newTransaction: Transaction = {
+            amount: tra.amount,
+            createdAt: `${MONTHS_NAME.get(splittedCreatedAt[1])!} ${splittedCreatedAt[0]}`,
+            path: tra.path,
+        }
+        return newTransaction
+    })
 
-    // console.log(responseWithDownAudits)
-    // console.log(responseWithUpAudits)
+    const responseWithUpAudits: Transaction[] = (await COLLECT_DOWN_OR_UP_AUDIT(login, UP)).map(function (tra) {
+        let splittedCreatedAt = tra.createdAt.split("T")[0].split("-")
+        let newTransaction: Transaction = {
+            amount: tra.amount,
+            createdAt: `${MONTHS_NAME.get(splittedCreatedAt[1])!} ${splittedCreatedAt[0]}`,
+            path: tra.path,
+        }
+        return newTransaction
+    })
+
+    const upTransactions = CALC_SUM_OF_AUDIT_BY_MONTH(responseWithUpAudits)
+    const downTransactions = CALC_SUM_OF_AUDIT_BY_MONTH(responseWithDownAudits)
+
+    downTransactions.forEach(transaction => labels.push(transaction.createdAt))
+    upTransactions.forEach(transaction => labels.push(transaction.createdAt))
+
+    const uniqueLabels = labels
+        .filter((c, index) => labels.indexOf(c) === index)
+        .map(dateString => new Date(`${dateString} 01`))
+        .sort((a, b) => b.getTime() - a.getTime())
+        .map(date => `${date.toLocaleString('default', { month: 'long' })} ${date.getFullYear()}`);
+
+    let transactionsArr: AuditTransactions = {
+        upTransactions: upTransactions,
+        downTransactions: downTransactions,
+        labels: uniqueLabels,
+    };
+
+    return transactionsArr;
 
 }
 
+export const AUDIT_RATIO = async (login: string) => {
+    const downAmount = (await COLLECT_DOWN_OR_UP_AUDIT(login, DOWN)).map(function (tra) { return tra.amount }).reduce((acc, val) => acc + val, 0)
+    const upAmount = (await COLLECT_DOWN_OR_UP_AUDIT(login, UP)).map(function (tra) { return tra.amount }).reduce((acc, val) => acc + val, 0)
+
+    return (upAmount / downAmount).toFixed(1)
+}

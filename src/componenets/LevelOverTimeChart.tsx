@@ -29,15 +29,22 @@ interface LevelOverTimeChartProps {
 }
 
 const LevelOverTimeChart: React.FunctionComponent<LevelOverTimeChartProps> = ({ login }) => {
-    //maybe useState([])   ?
-    const [transactions, setTransactions] = useState<Transaction[] | null>(null)
+    const [transactions, setTransactions] = useState<Map<string, number> | undefined>(undefined)
+    const [labelsFromKeys, setLabelsFromKeys] = useState<string[] | undefined>(undefined)
 
     useEffect(() => {
-        LEVEL_OVER_TIME_INFO(login).then((response: Transaction[]) => {
-            setTransactions(response)
-        })
+        const getData = async () => {
+            const transactions = await fetchLevelOverTimeInfo(login)
+            setTransactions(transactions)
+            setLabelsFromKeys(Array.from(transactions!.keys()))
+        }
+        getData()
     }, [login])
 
+    const fetchLevelOverTimeInfo = async (userLogin: string) => {
+        const res = await LEVEL_OVER_TIME_INFO(userLogin)
+        return res
+    }
 
     const options = {
         responsive: true,
@@ -47,23 +54,18 @@ const LevelOverTimeChart: React.FunctionComponent<LevelOverTimeChartProps> = ({ 
             },
             title: {
                 display: true,
-                text: 'Level gained while Div-01 project passed',
+                text: '',
             },
         },
     };
 
-    // TODO: make real time chart with dates
-    // first date: date of first complete project
-    // last date: date today
-
-    const labels = transactions?.map(function (transaction) { return transaction.createdAt?.split("T")[0] })
-
     const data = {
-        labels,
+        labels: labelsFromKeys,
         datasets: [
             {
-                label: 'Level ',
-                data: transactions?.map((transaction) => transaction.amount),
+                label: 'Level',
+                // data: transactions?.map((transaction) => transaction.amount),
+                data: labelsFromKeys?.map(label => transactions?.get(label)),
                 fill: false,
                 borderColor: 'rgb(75, 192, 192)',
                 tension: 0.1,
@@ -72,12 +74,13 @@ const LevelOverTimeChart: React.FunctionComponent<LevelOverTimeChartProps> = ({ 
         ],
     };
 
-    console.log(transactions)
     return (
-        <>
-            User Level Over Time for: {login}
-            <Line options={options} data={data} />
-        </>
+        <div className="mt-4">
+            <>
+                Level gained while Div-01 project passed
+                <Line options={options} data={data} />
+            </>
+        </div>
     )
 }
 
