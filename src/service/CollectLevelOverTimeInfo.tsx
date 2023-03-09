@@ -33,7 +33,6 @@ const LEVEL_DATA_QUERY_TO_SERVER = async (login: string, offset: number) => {
   );
 }
 
-
 const COLLECT_LEVEL_DATA = async (login: string) => {
   let fullDataFetched = false;
   let transactions: Array<Transaction> = [];

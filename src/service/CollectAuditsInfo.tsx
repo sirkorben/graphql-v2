@@ -62,7 +62,6 @@ const COLLECT_DOWN_OR_UP_AUDIT = async (login: string, upOrDown: string) => {
             );
         } else {
             fullDataFetched = true
-            console.log("no results");
         }
     };
     while (!fullDataFetched) {

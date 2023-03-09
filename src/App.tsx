@@ -8,7 +8,6 @@ function App() {
   const [login, setLogin] = useState("")
   const [displayGraphics, setDisplayGraphics] = useState(false)
 
-
   return (
     <div className="App">
       <Header setLoginToFetch={setLogin} />

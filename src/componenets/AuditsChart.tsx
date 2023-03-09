@@ -98,7 +98,7 @@ const AuditsChart: React.FunctionComponent<AuditsChartProps> = ({ login }) => {
     return (
         <>
             <div className="mt-4">
-                Bar Chart describing user's audits given or recieved
+                <p className="text-center"><b>Bar Chart describing user's audits given or recieved</b></p>
                 <Bar options={options} data={data} />
             </div>
 

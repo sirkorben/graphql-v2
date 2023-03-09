@@ -104,7 +104,6 @@ export const COLLECT_PROGRESS_DATA = async (login: string) => {
             });
         } else {
             fullDataFetched = true
-            console.log("no results");
         }
     };
 
@@ -133,7 +132,6 @@ export const COLLECT_XP_DATA = async (login: string) => {
             );
         } else {
             fullDataFetched = true
-            console.log("no results");
         }
     };
 
@@ -162,7 +160,6 @@ const COLLECT_ID_AND_LEVEL_DATA = async (login: string) => {
             idLevelInfo.login = login
             return idLevelInfo
         }
-        console.log("empty response")
         return idLevelInfo
 
     };

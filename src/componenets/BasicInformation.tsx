@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Button, Card } from 'react-bootstrap';
 import { UserInfo } from '../models/user.info';
-import { AUDIT_RATIO } from '../service/CollectAuditsInfo';
 import { BASIC_INFO } from '../service/CollectBasicInfo';
 
 type BasicInformationProps = {
@@ -16,18 +15,16 @@ const BasicInformation: React.FunctionComponent<BasicInformationProps> = ({ logi
     useEffect(() => {
         const getData = async () => {
             const basicInfo = await fetchBasicInfo(login)
+            if (basicInfo.login === "") {
+                setDisplayGraphics(false)
+            }
             setUserInfo(basicInfo)
         }
         getData()
-    }, [login])
+    }, [login, setDisplayGraphics])
 
     const fetchBasicInfo = async (userLogin: string) => {
         const res = await BASIC_INFO(userLogin)
-        return res
-    }
-
-    const fetchAuditRatio = async (userLogin: string) => {
-        const res = await AUDIT_RATIO(userLogin)
         return res
     }
 
@@ -35,8 +32,6 @@ const BasicInformation: React.FunctionComponent<BasicInformationProps> = ({ logi
         setShowMore(!showMore)
         setDisplayGraphics(!showMore)
     }
-
-
 
     return (
         <>

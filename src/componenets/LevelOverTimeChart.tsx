@@ -11,7 +11,6 @@ import {
     Tooltip,
     Legend,
 } from 'chart.js';
-import { Transaction } from '../models/user.info';
 import { useEffect, useState } from 'react';
 
 ChartJS.register(
@@ -77,7 +76,7 @@ const LevelOverTimeChart: React.FunctionComponent<LevelOverTimeChartProps> = ({ 
     return (
         <div className="mt-4">
             <>
-                Level gained while Div-01 project passed
+                <p className="text-center"><b>Level gained while Div-01 project passed</b></p>
                 <Line options={options} data={data} />
             </>
         </div>
