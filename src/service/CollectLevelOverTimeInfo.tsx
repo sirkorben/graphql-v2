@@ -59,7 +59,6 @@ const COLLECT_LEVEL_DATA = async (login: string) => {
       fullDataFetched = true;
     }
   }
-  console.log(transactions)
   return transactions;
 };
 
