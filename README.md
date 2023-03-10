@@ -1,6 +1,7 @@
 ## GraphQL task
 
 type in login of person you know from kood/Jõhvi and see information about them
+
 follow the link:
 
 https://sirkorben.github.io/graphql-v2/
