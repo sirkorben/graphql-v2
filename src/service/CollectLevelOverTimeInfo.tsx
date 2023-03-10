@@ -10,7 +10,8 @@ const LEVEL_DATA_QUERY_TO_SERVER = async (login: string, offset: number) => {
         where: {
           user: { login: { _eq: ${login} } }
           type: { _eq: "level" }
-          object: { type: { _regex: "project" } }
+        	object: { type: { _regex: "project|piscine" } }
+          path: {  _niregex: "/piscine-go/" }
         }
         offset: ${offset}
         order_by: { createdAt: asc }
@@ -58,7 +59,7 @@ const COLLECT_LEVEL_DATA = async (login: string) => {
       fullDataFetched = true;
     }
   }
-
+  console.log(transactions)
   return transactions;
 };
 
